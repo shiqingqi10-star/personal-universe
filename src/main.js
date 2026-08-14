@@ -476,6 +476,81 @@ atmosphere
 
 
 }
+
+// =======================
+// 木星程序纹理
+// =======================
+
+function createJupiterTexture(){
+
+const canvas =
+document.createElement("canvas");
+
+canvas.width = 1024;
+canvas.height = 512;
+
+const context =
+canvas.getContext("2d");
+
+const bands = [
+"#d8b38a",
+"#b8794f",
+"#ead2aa",
+"#9d6245",
+"#f1d9b5",
+"#c48a60",
+"#e5c49d",
+"#a96849",
+"#efd3aa",
+"#c58c63",
+"#e7c39a",
+"#9f6548"
+];
+
+const bandHeight =
+canvas.height / bands.length;
+
+bands.forEach(
+(band,index)=>{
+
+context.fillStyle = band;
+
+context.fillRect(
+0,
+index * bandHeight,
+canvas.width,
+bandHeight + 2
+);
+
+}
+);
+
+context.fillStyle =
+"rgba(167,73,55,0.9)";
+
+context.beginPath();
+
+context.ellipse(
+720,
+320,
+115,
+48,
+0,
+0,
+Math.PI * 2
+);
+
+context.fill();
+
+const texture =
+new THREE.CanvasTexture(canvas);
+
+return texture;
+
+}
+
+const jupiterTexture =
+createJupiterTexture();
     
 
 // =======================
@@ -563,6 +638,23 @@ texture:
 loader.load(
 marsTexture
 )
+},
+
+{
+name:"Jupiter",
+
+radius:5.5,
+
+distance:60,
+
+color:0xd6a36f,
+
+orbitSpeed:0.0009,
+
+rotationSpeed:0.02,
+
+texture:
+jupiterTexture
 }
 
 ];
@@ -705,6 +797,8 @@ createOrbit(27);
 createOrbit(35);
 
 createOrbit(45);
+
+createOrbit(60);
 
 
 
