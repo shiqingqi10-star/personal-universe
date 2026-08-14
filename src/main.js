@@ -486,64 +486,201 @@ function createJupiterTexture(){
 const canvas =
 document.createElement("canvas");
 
-canvas.width = 1024;
-canvas.height = 512;
+canvas.width = 2048;
+canvas.height = 1024;
 
 const context =
 canvas.getContext("2d");
 
-const bands = [
-"#d8b38a",
-"#b8794f",
-"#ead2aa",
-"#9d6245",
-"#f1d9b5",
-"#c48a60",
-"#e5c49d",
-"#a96849",
-"#efd3aa",
-"#c58c63",
-"#e7c39a",
-"#9f6548"
-];
+const baseGradient =
+context.createLinearGradient(
+0,
+0,
+0,
+canvas.height
+);
 
-const bandHeight =
-canvas.height / bands.length;
+baseGradient.addColorStop(0,"#e7d0aa");
+baseGradient.addColorStop(0.18,"#b9794e");
+baseGradient.addColorStop(0.34,"#efd8b4");
+baseGradient.addColorStop(0.50,"#a7603f");
+baseGradient.addColorStop(0.66,"#e6c59b");
+baseGradient.addColorStop(0.82,"#b7744c");
+baseGradient.addColorStop(1,"#ead1aa");
 
-bands.forEach(
-(band,index)=>{
-
-context.fillStyle = band;
+context.fillStyle =
+baseGradient;
 
 context.fillRect(
 0,
-index * bandHeight,
+0,
 canvas.width,
-bandHeight + 2
+canvas.height
 );
+
+const bandColors = [
+"rgba(244,221,186,0.78)",
+"rgba(154,91,58,0.64)",
+"rgba(225,185,137,0.72)",
+"rgba(119,68,49,0.50)",
+"rgba(248,225,191,0.80)",
+"rgba(184,112,72,0.58)",
+"rgba(239,207,164,0.72)",
+"rgba(142,80,56,0.54)",
+"rgba(239,214,177,0.76)",
+"rgba(177,106,69,0.56)",
+"rgba(232,194,148,0.68)",
+"rgba(133,76,55,0.48)",
+"rgba(241,214,174,0.74)",
+"rgba(185,116,75,0.54)",
+"rgba(235,204,160,0.72)",
+"rgba(151,87,60,0.50)"
+];
+
+const bandHeight =
+canvas.height / bandColors.length;
+
+bandColors.forEach(
+(color,index)=>{
+
+const centerY =
+index * bandHeight + bandHeight * 0.5;
+
+context.beginPath();
+
+context.moveTo(
+0,
+centerY
+);
+
+for(
+let x=0;
+x<=canvas.width;
+x+=16
+){
+
+const wave =
+Math.sin(
+x * 0.018 + index * 1.35
+) * (6 + (index % 4) * 2)
++
+Math.sin(
+x * 0.006 + index * 0.7
+) * 4;
+
+context.lineTo(
+x,
+centerY + wave
+);
+
+}
+
+context.strokeStyle = color;
+context.lineWidth = bandHeight * 0.72;
+context.lineCap = "round";
+context.stroke();
 
 }
 );
 
+for(
+let i=0;
+i<180;
+i++
+){
+
+const y =
+Math.random() * canvas.height;
+
+const x =
+Math.random() * canvas.width;
+
+const length =
+60 + Math.random() * 220;
+
+context.beginPath();
+
+context.moveTo(
+x,
+y
+);
+
+context.lineTo(
+x + length,
+y + (Math.random()-0.5) * 8
+);
+
+context.strokeStyle =
+Math.random() > 0.5
+? "rgba(255,235,205,0.16)"
+: "rgba(104,59,45,0.15)";
+
+context.lineWidth =
+1 + Math.random() * 4;
+
+context.stroke();
+
+}
+
+const spotGradient =
+context.createRadialGradient(
+1450,
+650,
+18,
+1450,
+650,
+150
+);
+
+spotGradient.addColorStop(0,"rgba(215,117,79,0.98)");
+spotGradient.addColorStop(0.45,"rgba(178,82,59,0.94)");
+spotGradient.addColorStop(0.78,"rgba(198,107,76,0.78)");
+spotGradient.addColorStop(1,"rgba(132,70,55,0.18)");
+
 context.fillStyle =
-"rgba(167,73,55,0.9)";
+spotGradient;
 
 context.beginPath();
 
 context.ellipse(
-720,
-320,
-115,
-48,
-0,
+1450,
+650,
+155,
+70,
+-0.08,
 0,
 Math.PI * 2
 );
 
 context.fill();
 
+context.strokeStyle =
+"rgba(244,195,153,0.38)";
+
+context.lineWidth = 10;
+
+context.beginPath();
+
+context.ellipse(
+1450,
+650,
+185,
+88,
+-0.08,
+0,
+Math.PI * 2
+);
+
+context.stroke();
+
 const texture =
 new THREE.CanvasTexture(canvas);
+
+texture.colorSpace =
+THREE.SRGBColorSpace;
+
+texture.anisotropy =
+renderer.capabilities.getMaxAnisotropy();
 
 return texture;
 
@@ -643,15 +780,15 @@ marsTexture
 {
 name:"Jupiter",
 
-radius:5.5,
+radius:6.5,
 
-distance:60,
+distance:68,
 
 color:0xd6a36f,
 
-orbitSpeed:0.0009,
+orbitSpeed:0.0007,
 
-rotationSpeed:0.02,
+rotationSpeed:0.016,
 
 texture:
 jupiterTexture
@@ -728,6 +865,17 @@ planet,
 
 }
 
+if(data.name === "Jupiter")
+{
+
+planet.rotation.z =
+THREE.MathUtils.degToRad(3.1);
+
+planet.material.roughness = 0.78;
+planet.material.emissiveIntensity = 0.08;
+
+}
+
 
 
 planets.push(
@@ -798,7 +946,7 @@ createOrbit(35);
 
 createOrbit(45);
 
-createOrbit(60);
+createOrbit(68);
 
 
 
