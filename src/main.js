@@ -780,9 +780,9 @@ marsTexture
 {
 name:"Jupiter",
 
-radius:6.5,
+radius:7.5,
 
-distance:68,
+distance:62,
 
 color:0xd6a36f,
 
@@ -871,8 +871,11 @@ if(data.name === "Jupiter")
 planet.rotation.z =
 THREE.MathUtils.degToRad(3.1);
 
-planet.material.roughness = 0.78;
-planet.material.emissiveIntensity = 0.08;
+planet.material.roughness = 0.55;
+planet.material.emissive = new THREE.Color(0xffffff);
+planet.material.emissiveMap = jupiterTexture;
+planet.material.emissiveIntensity = 0.45;
+planet.material.needsUpdate = true;
 
 }
 
@@ -946,7 +949,7 @@ createOrbit(35);
 
 createOrbit(45);
 
-createOrbit(68);
+createOrbit(62);
 
 
 
