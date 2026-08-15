@@ -22,6 +22,8 @@ import mercuryTexture from "../textures/mercury.jpg";
 import venusTexture from "../textures/venus.jpg";
 import marsTexture from "../textures/mars.jpg";
 import jupiterTexture from "../textures/jupiter.jpg";
+import saturnTexture from "../textures/saturn.jpg";
+import saturnRingTexture from "../textures/saturn_ring.png";
 
 // =======================
 // 创建场景
@@ -278,11 +280,17 @@ function createAtmosphere(
 }
 
 // =======================
-// 木星照片纹理
+// 木星与土星照片纹理
 // =======================
 
 const jupiterMap = loader.load(jupiterTexture);
 jupiterMap.colorSpace = THREE.SRGBColorSpace;
+
+const saturnMap = loader.load(saturnTexture);
+saturnMap.colorSpace = THREE.SRGBColorSpace;
+
+const saturnRingMap = loader.load(saturnRingTexture);
+saturnRingMap.colorSpace = THREE.SRGBColorSpace;
 
 // =======================
 // 行星数据
@@ -333,6 +341,15 @@ const planetData = [
         orbitSpeed:0.0007,
         rotationSpeed:0.016,
         texture:jupiterMap
+    },
+    {
+        name:"Saturn",
+        radius:6.2,
+        distance:86,
+        color:0xffffff,
+        orbitSpeed:0.00045,
+        rotationSpeed:0.014,
+        texture:saturnMap
     }
 ];
 
@@ -377,16 +394,51 @@ planetData.forEach(data=>{
     }
 
     if(data.name === "Jupiter"){
-        // 木星约 3.1° 自转轴倾角
         planet.rotation.z = THREE.MathUtils.degToRad(3.1);
-
-        // 使用真实木星照片作为表面和轻微自发光纹理
         planet.material.map = jupiterMap;
         planet.material.roughness = 0.58;
         planet.material.emissive = new THREE.Color(0xffffff);
         planet.material.emissiveMap = jupiterMap;
         planet.material.emissiveIntensity = 0.22;
         planet.material.needsUpdate = true;
+    }
+
+    if(data.name === "Saturn"){
+        // 土星约 26.7° 自转轴倾角
+        planet.rotation.z = THREE.MathUtils.degToRad(26.7);
+
+        planet.material.map = saturnMap;
+        planet.material.roughness = 0.7;
+        planet.material.emissive = new THREE.Color(0xffffff);
+        planet.material.emissiveMap = saturnMap;
+        planet.material.emissiveIntensity = 0.16;
+        planet.material.needsUpdate = true;
+
+        const ringGeometry = new THREE.RingGeometry(
+            7.6,
+            12.4,
+            192
+        );
+
+        const ringMaterial = new THREE.MeshBasicMaterial({
+            map:saturnRingMap,
+            side:THREE.DoubleSide,
+            transparent:true,
+            opacity:0.95,
+            depthWrite:false,
+            alphaTest:0.03
+        });
+
+        const ring = new THREE.Mesh(
+            ringGeometry,
+            ringMaterial
+        );
+
+        // RingGeometry 默认位于 XY 平面，旋转到土星赤道平面
+        ring.rotation.x = Math.PI / 2;
+        ring.renderOrder = 1;
+
+        planet.add(ring);
     }
 
     planets.push(planet);
@@ -430,6 +482,7 @@ createOrbit(27);
 createOrbit(35);
 createOrbit(45);
 createOrbit(62);
+createOrbit(86);
 
 // =======================
 // 地球云层
@@ -508,11 +561,11 @@ function animate(){
     sun.rotation.y += 0.002;
 
     planets.forEach(planet=>{
-        // 自转：木星也使用 rotationSpeed
+        // 所有行星自转，包括木星和土星
         planet.rotation.y +=
         planet.userData.rotationSpeed;
 
-        // 公转：木星也随 orbitGroup 绕太阳旋转
+        // 所有行星公转，包括木星和土星
         planet.userData.orbitGroup.rotation.y +=
         planet.userData.orbitSpeed;
     });
