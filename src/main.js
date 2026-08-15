@@ -22,7 +22,7 @@ import mercuryTexture from "../textures/mercury.jpg";
 import venusTexture from "../textures/venus.jpg";
 import marsTexture from "../textures/mars.jpg";
 import jupiterTexture from "../textures/jupiter.jpg";
-import saturnTexture from "../textures/saturn.jpg";
+import saturnTexture from "../textures/saturn.png";
 
 // =======================
 // 创建场景
