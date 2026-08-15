@@ -23,7 +23,6 @@ import venusTexture from "../textures/venus.jpg";
 import marsTexture from "../textures/mars.jpg";
 import jupiterTexture from "../textures/jupiter.jpg";
 import saturnTexture from "../textures/saturn.jpg";
-import saturnRingTexture from "../textures/saturn_ring.png";
 
 // =======================
 // 创建场景
@@ -285,12 +284,64 @@ function createAtmosphere(
 
 const jupiterMap = loader.load(jupiterTexture);
 jupiterMap.colorSpace = THREE.SRGBColorSpace;
+jupiterMap.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
 const saturnMap = loader.load(saturnTexture);
 saturnMap.colorSpace = THREE.SRGBColorSpace;
+saturnMap.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
-const saturnRingMap = loader.load(saturnRingTexture);
-saturnRingMap.colorSpace = THREE.SRGBColorSpace;
+// =======================
+// 土星环系统
+// =======================
+
+function createSaturnRings(planet){
+    const ringGroup = new THREE.Group();
+
+    // 多层独立环带，比直接把一张方形图片贴到 RingGeometry 上更稳定，
+    // 同时保留明显的卡西尼缝和不同明暗层次。
+    const ringBands = [
+        { inner:7.4, outer:8.1, color:0xc9b58e, opacity:0.34 },
+        { inner:8.15, outer:9.15, color:0xe3d2ad, opacity:0.62 },
+        { inner:9.2, outer:10.15, color:0xbca47f, opacity:0.48 },
+        { inner:10.25, outer:10.65, color:0x786956, opacity:0.22 },
+        // 卡西尼缝：10.65 到 11.0 故意留空
+        { inner:11.0, outer:11.65, color:0xd8c7a4, opacity:0.52 },
+        { inner:11.7, outer:12.55, color:0xb49e7c, opacity:0.38 },
+        { inner:12.6, outer:13.35, color:0xe1d0ad, opacity:0.24 }
+    ];
+
+    ringBands.forEach((band,index)=>{
+        const geometry = new THREE.RingGeometry(
+            band.inner,
+            band.outer,
+            256
+        );
+
+        const material = new THREE.MeshBasicMaterial({
+            color:band.color,
+            side:THREE.DoubleSide,
+            transparent:true,
+            opacity:band.opacity,
+            depthWrite:false,
+            blending:THREE.NormalBlending
+        });
+
+        const ring = new THREE.Mesh(
+            geometry,
+            material
+        );
+
+        // RingGeometry 默认位于 XY 平面，转到土星赤道面。
+        ring.rotation.x = Math.PI / 2;
+        ring.renderOrder = 2 + index;
+
+        ringGroup.add(ring);
+    });
+
+    // 让整个环组保持在土星赤道面，并跟随土星倾角与公转。
+    planet.add(ringGroup);
+    planet.userData.ringGroup = ringGroup;
+}
 
 // =======================
 // 行星数据
@@ -344,11 +395,11 @@ const planetData = [
     },
     {
         name:"Saturn",
-        radius:6.2,
+        radius:6.4,
         distance:86,
         color:0xffffff,
         orbitSpeed:0.00045,
-        rotationSpeed:0.014,
+        rotationSpeed:0.012,
         texture:saturnMap
     }
 ];
@@ -404,41 +455,18 @@ planetData.forEach(data=>{
     }
 
     if(data.name === "Saturn"){
-        // 土星约 26.7° 自转轴倾角
+        // 土星轴倾角约 26.7°，球体与环一起倾斜。
         planet.rotation.z = THREE.MathUtils.degToRad(26.7);
 
+        // 强化照片纹理本身，避免远离太阳后灰暗发黑。
         planet.material.map = saturnMap;
-        planet.material.roughness = 0.7;
+        planet.material.roughness = 0.62;
         planet.material.emissive = new THREE.Color(0xffffff);
         planet.material.emissiveMap = saturnMap;
-        planet.material.emissiveIntensity = 0.16;
+        planet.material.emissiveIntensity = 0.25;
         planet.material.needsUpdate = true;
 
-        const ringGeometry = new THREE.RingGeometry(
-            7.6,
-            12.4,
-            192
-        );
-
-        const ringMaterial = new THREE.MeshBasicMaterial({
-            map:saturnRingMap,
-            side:THREE.DoubleSide,
-            transparent:true,
-            opacity:0.95,
-            depthWrite:false,
-            alphaTest:0.03
-        });
-
-        const ring = new THREE.Mesh(
-            ringGeometry,
-            ringMaterial
-        );
-
-        // RingGeometry 默认位于 XY 平面，旋转到土星赤道平面
-        ring.rotation.x = Math.PI / 2;
-        ring.renderOrder = 1;
-
-        planet.add(ring);
+        createSaturnRings(planet);
     }
 
     planets.push(planet);
